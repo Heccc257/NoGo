@@ -6,6 +6,7 @@
 #include<set>
 #include<conio.h>
 #include<ctime>
+#include<map>
 #include<fstream>
 #include<iomanip>
 #include<windows.h>
@@ -13,17 +14,31 @@
 
 using namespace std;
 
+int Input_Mode=1;
+int chx=1,chy=1;
+void Set_xy() {
+    for(int i=1;i<=N;i++) {
+        for(int j=1;j<=N;j++) {
+            if(mp[i][j]==-1) {
+                chx=i;
+                chy=j;
+                return ;
+            }
+        }
+    }
+}
+
 void Print() {
     system("cls");
     for(int i=1;i<=N;i++) cout<<i<<"   ";cout<<"\n";
     for(int i=1;i<=N;i++) {
         for(int j=1;j<=N;j++) {
-            if(mp[i][j]==1) printf("○");
+            if(Turn==0&&Input_Mode&&i==chx&&j==chy) printf("╳ ");
+            else if(mp[i][j]==1) printf("○");
             else if(mp[i][j]==0) printf("●");
             else if(i==1&&j==1) {
                 printf("┏ ");
-            }
-            else if(i==1&&j==N) {
+            } else if(i==1&&j==N) {
                 printf("┓ ");
             } else if(i==N&&j==1) {
                 printf("┗ ");
@@ -91,7 +106,6 @@ int Robot_Turn=-1;
 namespace Menu {
     int init_flag=0,tag;
     vector<string>cmd;
-    
     void Withdraw() {
         static node tem;
         if(List.size()<=0) {
@@ -113,6 +127,7 @@ namespace Menu {
         cmd.push_back("Read File");
         cmd.push_back("Withdraw");
         cmd.push_back("Help");
+        cmd.push_back("Change Input Mode");
     }
 
     void open_menu() {
@@ -174,6 +189,10 @@ namespace Menu {
                             printf("Maybe (%d,%d) is OK!!\n",x,y);
                             system("pause");
                             return ;
+                        } else if(cmd[tag]=="Change Input Mode"){
+                            Input_Mode^=1;
+                            Set_xy();
+                            return ;
                         }
                         break;
                     }
@@ -190,8 +209,6 @@ int Get_cmd(int &x,int &y) {
         c=getchar();
         // cout<<"c="<<c<<"\n";
         if(c=='M'||c=='m') {
-            cout<<"CCCC\n";
-            cout<<"********";
             Menu::open_menu();
             return 1;
         }
@@ -210,9 +227,97 @@ int Get_cmd(int &x,int &y) {
     return 0;
 }
 
+map<int,int>DX,DY;
+
+
+int Left(int x,int y) {
+    //(x,y)以及其左边第一个空点
+    for(int j=y;j>=1;j--) if(mp[x][j]==-1) return j;
+    return 0;
+}
+
+int Right(int x,int y) {
+    //(x,y)以及其右边第一个空点
+    for(int j=y;j<=N;j++) if(mp[x][j]==-1) return j;
+    return 0;
+}
+
+int Find_nearest(int x,int y) {
+    if(Left(x,y)) return Left(x,y);
+    if(Right(x,y)) return Right(x,y);
+    return 0;
+}
+
+int Get_cmd_arrow(int &x,int &y) {
+    DX[72]=-1,DX[75]=0,DX[77]=0,DX[80]=1;
+    DY[72]=0,DY[75]=-1,DY[77]=1,DY[80]=0;
+    char c;
+    bool zero=0;
+    while(1) {
+        // cerr<<"233\n";
+        if(kbhit()) {
+            c=_getch();
+            if(c==27) {
+                Menu::open_menu();
+                return 1;
+            }
+            if(c==13) {
+                //回车
+                x=chx,y=chy;
+                return 10;
+            }
+            if(!c||c==224||c==-32) {
+                zero=1;
+                continue ;
+            }
+            if(zero) {
+                int tx=0,ty=0;
+                if(c==72) {
+                    for(int i=chx-1;i>=1;i--) {
+                        if(Find_nearest(i,chy)) {
+                            tx=i;
+                            ty=Find_nearest(i,chy);
+                            break;
+                        }
+                    }
+                } else if(c==80) {
+                    for(int i=chx+1;i<=N;i++) {
+                        if(Find_nearest(i,chy)) {
+                            tx=i;
+                            ty=Find_nearest(i,chy);
+                            break;
+                        }
+                    }
+                } else if(c==75) {
+                    tx=chx;
+                    ty=Left(chx,chy-1);
+                } else if(c==77){
+                    tx=chx;
+                    ty=Right(chx,chy+1);
+                }
+                if(tx&&ty) {
+                    chx=tx,chy=ty;
+                    return 2;                    
+                }
+                // if(c==77||c==80||c==75||c==72) {
+                //     //方向键
+                //     while(1) {
+                //         tx+=DX[c],ty+=DY[c];
+                //         if(mp[tx][ty]==2) break;
+                //         if(mp[tx][ty]==-1) {
+
+                //         }
+                //     }
+                // }
+                zero=0;
+            }
+        }
+    }
+    return 0;
+}
+
 char str[2233];
 int main() {
-
 //     Init();
 //     mp[1][1]=1;
 //     mp[2][2]=mp[3][3]=mp[4][4]=mp[5][4]=-1;
@@ -225,7 +330,9 @@ int main() {
     Init();
     int Win=0;
     int x=-1,y;
+
     Menu::open_menu();
+
     while(1) {
         Print();
         if(!Check_with_ufs::Check_all()) {
@@ -233,33 +340,45 @@ int main() {
             else printf("Black Win!!");
             return 0;
         }
-
-        printf("input 'M' to see the menu\n");
-        printf("it's your turn!: %c\n",Turn?'X':'O');
-
+        if(Input_Mode) {
+            printf("Press ESC to see the menu\n");
+        } else {
+            printf("Input 'M' to see the menu\n");
+        }
+        printf("It's your turn!: ");
+        if(Turn) cout<<"○\n";
+        else cout<<"●\n";
         int cmd;
-        if(Turn==0   ) {
-            cmd=Get_cmd(x,y);
-            if(cmd) continue ;
+        if(Turn==0) {
+            if(Input_Mode==1) {
+                cmd=Get_cmd_arrow(x,y);
+                if(cmd==1) continue ;//菜单
+                if(cmd==2) continue ;//改变方向
+            } else {
+                cmd=Get_cmd(x,y);
+                if(cmd) continue ;
+            }
         } else Robot::Move(x,y);
 
+        
         printf("(%d,%d)\n",x,y);
         Sleep(400);
         int ck=Check_with_ufs::Check_xy(x,y,Turn);
         if(ck==1) {
             //success
             move(x,y);
+            Set_xy();
             Turn^=1;
             // Sleep(200);
             continue ;
         }
 
         if(!ck) {
-            cout<<"you can't place here!\n";
+            cout<<"You can't place here!\n";
         } else if(ck==-1) {
             cout<<"-1\n";
         } else if(ck==-2) {
-            cout<<"out of the board!\n";
+            cout<<"Out of the board!\n";
         }
         printf("place again\n");
         system("pause");
