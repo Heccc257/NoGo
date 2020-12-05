@@ -70,8 +70,6 @@ void Print() {
 void Write(char *name) {
     ofstream File;
     File.open(name,ios::out);
-    cerr<<"name: "<<name<<'\n';
-    cerr<<"size="<<List.size()<<"\n";
     File<<List.size()<<"\n";
     for(int i=0;i<List.size();i++) {
         File<<List[i].x<<" "<<List[i].y<<"\n";
@@ -336,8 +334,11 @@ int main() {
     while(1) {
         Print();
         if(!Check_with_ufs::Check_all()) {
+            sprintf(str,"Lastgame");
+            Write(str);
             if(Turn==1) printf("White Win!!");
             else printf("Black Win!!");
+            system("pause");
             return 0;
         }
         if(Input_Mode) {
@@ -362,7 +363,7 @@ int main() {
 
         
         printf("(%d,%d)\n",x,y);
-        Sleep(400);
+        Sleep(600);
         int ck=Check_with_ufs::Check_xy(x,y,Turn);
         if(ck==1) {
             //success
