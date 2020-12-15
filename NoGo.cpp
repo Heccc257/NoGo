@@ -10,6 +10,7 @@
 #include<fstream>
 #include<iomanip>
 #include<windows.h>
+#include<io.h>
 #include "Move.cpp"
 
 using namespace std;
@@ -80,8 +81,58 @@ void Write(char *name) {
             File<<mp[i][j]<<" ";
 }
 
+namespace Get_File {
+    vector<string> files;  
+    char buffer[MAX_PATH];   
+    char str[30];  
+    void getFiles( string path, string path2, vector<string>& files )  
+    {  
+        //文件句柄  
+        long   hFile   =   0;  
+        //文件信息  
+        struct _finddata_t fileinfo;  
+        string p,p2;  
+        if((hFile = _findfirst(p.assign(path).append(path2).append("*").c_str(),&fileinfo)) !=  -1)  
+        {  
+            do  
+            {  
+                //如果是目录,迭代之  
+                //如果不是,加入列表  
+                if((fileinfo.attrib &  _A_SUBDIR))  
+                {  
+                    if(strcmp(fileinfo.name,".") != 0  &&  strcmp(fileinfo.name,"..") != 0)  
+                        getFiles( p.assign(path).append("\\"),p2.assign(fileinfo.name).append("\\"), files );  
+                }  
+                else  
+                {  
+                    files.push_back(p.assign(path2).append(fileinfo.name) );  //这一行可以给出相对路径
+                    //files.push_back(p.assign(fileinfo.name) );  //这一行可以给出文件名 
+                }
+            }while(_findnext(hFile, &fileinfo)  == 0);  
+            _findclose(hFile);  
+        }  
+    }
+
+    void Show_Files() {
+        string tem;
+        getcwd(buffer, MAX_PATH);
+        string filePath;
+        filePath.assign(buffer).append("\\");
+        ////获取该路径下的所有文件  
+        getFiles(filePath,"", files );  
+        int size = files.size();  
+        for (int i = 0;i < size;i++)  
+        {  
+            tem = files[i].c_str();
+            if(tem.substr(tem.find_last_of('.')+1)=="nogo") cout<<"     "<<tem<<"\n";
+            // cout<<files[i].c_str()<<endl;  
+        }
+    }
+};
+
 bool Read(char *name) {
-    strcat(name,".nogo");
+    string Del = name;
+    if(Del.substr(Del.find_last_of('.')+1)!="nogo") strcat(name,".nogo");
     ifstream File;
     File.open(name,ios::in);
     if(!File) {
@@ -99,6 +150,7 @@ bool Read(char *name) {
         Check_with_ufs::Fill(tem.x,tem.y,Turn);
         Turn^=1;
     }
+    cerr<<"Success!\n";
     return 1;
 }
 
@@ -176,6 +228,10 @@ namespace Menu {
                             printf("Save success\n");
                             system("pause");
                         } else if(cmd[tag]=="Read File") {
+                            printf("Files are below:\n");
+                            puts("-------------------");
+                            Get_File::Show_Files();
+                            puts("-------------------");
                             printf("input the name of the file:");
                             scanf("%s",str);
                             if(Read(str)) {
