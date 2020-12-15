@@ -68,6 +68,7 @@ void Print() {
 }
 
 void Write(char *name) {
+    strcat(name,".nogo");
     ofstream File;
     File.open(name,ios::out);
     File<<List.size()<<"\n";
@@ -80,6 +81,7 @@ void Write(char *name) {
 }
 
 bool Read(char *name) {
+    strcat(name,".nogo");
     ifstream File;
     File.open(name,ios::in);
     if(!File) {
@@ -165,7 +167,6 @@ namespace Menu {
                             ::Init();
                             return ;
                         } else if(cmd[tag]=="Withdraw") {
-                            cout<<"233\n";
                             Withdraw();
                             system("pause");
                         } else if(cmd[tag]=="Save") {
@@ -226,7 +227,6 @@ int Get_cmd(int &x,int &y) {
 }
 
 map<int,int>DX,DY;
-
 
 int Left(int x,int y) {
     //(x,y)以及其左边第一个空点
@@ -351,6 +351,7 @@ int main() {
         else cout<<"●\n";
         int cmd;
         if(Turn==0) {
+            // Robot::Rand(x,y);
             if(Input_Mode==1) {
                 cmd=Get_cmd_arrow(x,y);
                 if(cmd==1) continue ;//菜单
@@ -359,7 +360,9 @@ int main() {
                 cmd=Get_cmd(x,y);
                 if(cmd) continue ;
             }
-        } else Robot::Move(x,y);
+        } else {
+            Robot::Move(x,y);
+        }
 
         
         printf("(%d,%d)\n",x,y);
