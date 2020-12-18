@@ -29,10 +29,19 @@ void Set_xy() {
     }
 }
 
+int kg=0;
+void KG() {
+    for(int i=1;i<=kg;i++) cout<<" ";
+}
 void Print() {
     system("cls");
+    puts("");
+    KG();
     for(int i=1;i<=N;i++) cout<<i<<"   ";cout<<"\n";
     for(int i=1;i<=N;i++) {
+
+        KG();
+
         for(int j=1;j<=N;j++) {
             if(Turn==0&&Input_Mode&&i==chx&&j==chy) printf("╳ ");
             else if(mp[i][j]==1) printf("○");
@@ -61,10 +70,12 @@ void Print() {
         }
         printf(" %d\n",i);
         if(i!=N) {
+            KG();
             for(int j=1;j<=N;j++) printf("｜  ");
             puts("");
         }
     }
+    KG();
     for(int i=1;i<=N;i++) cout<<i<<"   ";cout<<"\n";
 }
 
@@ -153,7 +164,15 @@ bool Read(char *name) {
     cerr<<"Success!\n";
     return 1;
 }
-
+int Cursor_flag;
+void HideCursor(int flag)
+{
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO CursorInfo;
+	GetConsoleCursorInfo(handle, &CursorInfo);//获取控制台光标信息
+	CursorInfo.bVisible = flag; //隐藏控制台光标
+	SetConsoleCursorInfo(handle, &CursorInfo);//设置控制台光标状态
+}
 int Robot_Turn=-1;
 namespace Menu {
     int init_flag=0,tag;
@@ -244,7 +263,9 @@ namespace Menu {
                             printf("Maybe (%d,%d) is OK!!\n",x,y);
                             system("pause");
                             return ;
-                        } else if(cmd[tag]=="Change Input Mode"){
+                        } else if(cmd[tag]=="Change Input Mode") {
+                            Cursor_flag ^= 1;
+                            HideCursor(Cursor_flag);
                             Input_Mode^=1;
                             Set_xy();
                             return ;
@@ -353,16 +374,6 @@ int Get_cmd_arrow(int &x,int &y) {
                     chx=tx,chy=ty;
                     return 2;                    
                 }
-                // if(c==77||c==80||c==75||c==72) {
-                //     //方向键
-                //     while(1) {
-                //         tx+=DX[c],ty+=DY[c];
-                //         if(mp[tx][ty]==2) break;
-                //         if(mp[tx][ty]==-1) {
-
-                //         }
-                //     }
-                // }
                 zero=0;
             }
         }
@@ -372,13 +383,7 @@ int Get_cmd_arrow(int &x,int &y) {
 
 char str[2233];
 int main() {
-//     Init();
-//     mp[1][1]=1;
-//     mp[2][2]=mp[3][3]=mp[4][4]=mp[5][4]=-1;
-//     Print();
-//     cout<<"○●〇●—- —";
-//     system("pause");
-// return 0;
+    HideCursor(Cursor_flag);
 
     srand(233);
     Init();
