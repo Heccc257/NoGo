@@ -29,18 +29,20 @@ void Set_xy() {
     }
 }
 
-int kg=0;
-void KG() {
-    for(int i=1;i<=kg;i++) cout<<" ";
+int blk = 16;
+void Blank() {
+    for(int i=1;i<=blk;i++) cout<<" ";
 }
 void Print() {
     system("cls");
     puts("");
-    KG();
+
+    Blank();
+
     for(int i=1;i<=N;i++) cout<<i<<"   ";cout<<"\n";
     for(int i=1;i<=N;i++) {
 
-        KG();
+        Blank();
 
         for(int j=1;j<=N;j++) {
             if(Turn==0&&Input_Mode&&i==chx&&j==chy) printf("╳ ");
@@ -70,26 +72,26 @@ void Print() {
         }
         printf(" %d\n",i);
         if(i!=N) {
-            KG();
+
+            Blank();
+
             for(int j=1;j<=N;j++) printf("｜  ");
             puts("");
         }
     }
-    KG();
+    Blank();
     for(int i=1;i<=N;i++) cout<<i<<"   ";cout<<"\n";
 }
 
-void Write(char *name) {
-    strcat(name,".nogo");
-    ofstream File;
-    File.open(name,ios::out);
-    File<<List.size()<<"\n";
-    for(int i=0;i<List.size();i++) {
-        File<<List[i].x<<" "<<List[i].y<<"\n";
-    }
-    for(int i=1;i<=N;i++,File<<"\n")
-        for(int j=1;j<=N;j++)
-            File<<mp[i][j]<<" ";
+int Cursor_flag;
+
+void HideCursor(int flag)
+{
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO CursorInfo;
+	GetConsoleCursorInfo(handle, &CursorInfo);//获取控制台光标信息
+	CursorInfo.bVisible = flag; //隐藏控制台光标
+	SetConsoleCursorInfo(handle, &CursorInfo);//设置控制台光标状态
 }
 
 namespace Get_File {
@@ -126,6 +128,7 @@ namespace Get_File {
 
     void Show_Files() {
         string tem;
+        files.clear();
         getcwd(buffer, MAX_PATH);
         string filePath;
         filePath.assign(buffer).append("\\");
@@ -147,10 +150,12 @@ bool Read(char *name) {
     ifstream File;
     File.open(name,ios::in);
     if(!File) {
+        
         printf("No such file");
         system("pause");
         return 0;
     }
+
     Init();
     int Size;
     File>>Size;
@@ -164,26 +169,35 @@ bool Read(char *name) {
     cerr<<"Success!\n";
     return 1;
 }
-int Cursor_flag;
-void HideCursor(int flag)
-{
-	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_CURSOR_INFO CursorInfo;
-	GetConsoleCursorInfo(handle, &CursorInfo);//获取控制台光标信息
-	CursorInfo.bVisible = flag; //隐藏控制台光标
-	SetConsoleCursorInfo(handle, &CursorInfo);//设置控制台光标状态
+
+void Write(char *name) {
+  
+    strcat(name,".nogo");
+    ofstream File;
+    File.open(name,ios::out);
+    File<<List.size()<<"\n";
+    for(int i=0;i<List.size();i++) {
+        File<<List[i].x<<" "<<List[i].y<<"\n";
+    }
+    for(int i=1;i<=N;i++,File<<"\n")
+        for(int j=1;j<=N;j++)
+            File<<mp[i][j]<<" ";
 }
+
+
 int Robot_Turn=-1;
+
+
 namespace Menu {
     int init_flag=0,tag;
     vector<string>cmd;
     void Withdraw() {
         static node tem;
         if(List.size()<=0) {
-            cout<<"you can't withdraw!!\n";
+            cout<<"you can't 悔棋!!\n";
         } else {
             tem=List.back();
-            printf("withdraw: (%d,%d)\n",tem.x,tem.y);
+            printf("悔棋: (%d,%d)\n",tem.x,tem.y);
             Turn^=1;
             mp[tem.x][tem.y]=-1;
             List.pop_back();
@@ -193,12 +207,12 @@ namespace Menu {
     }
     
     void Init() {
-        cmd.push_back("New game");
-        cmd.push_back("Save");
-        cmd.push_back("Read File");
-        cmd.push_back("Withdraw");
-        cmd.push_back("Help");
-        cmd.push_back("Change Input Mode");
+        cmd.push_back("新游戏");
+        cmd.push_back("存盘");
+        cmd.push_back("读取");
+        cmd.push_back("悔棋");
+        cmd.push_back("提示");
+        cmd.push_back("更改输入方式");
     }
 
     void open_menu() {
@@ -207,13 +221,26 @@ namespace Menu {
 
         while(1) {
             system("cls");
-            printf("press Esc to go back to the baord\n");
+
+            Blank();
+            for(int i=1;i<=5;i++) cout<<" ";
+            printf("按 ESC 回到棋盘\n");
+            puts("");
             // cout<<"tag="<<tag<<"\n";
             for(int i=0;i<cmd.size();i++) {
-                if(tag==i) cout<<setw(9)<<"→ ";
-                else cout<<setw(10)<<" ";
+                Blank();
+                if(tag==i) {
+                    cout<<setw(10)<<"→ ";
+                } else cout<<setw(10)<<" ";
                 cout<<cmd[i]<<"  ";
                 cout<<"\n";
+                if(i==tag) {
+                    Blank();
+                    cout<<setw(10)<<"--";
+                    for(int j=0;j<cmd[i].length();j++) cout<<"-";
+                    cout<<"--";
+                    cout<<"\n";
+                }
             }
             int c;
             int zero=0;
@@ -234,36 +261,53 @@ namespace Menu {
                     static char str[233];
                     if(c==13) {
                         system("cls");
-                        if(cmd[tag]=="New game") {
+                        if(cmd[tag]=="新游戏") {
                             ::Init();
                             return ;
-                        } else if(cmd[tag]=="Withdraw") {
+                        } else if(cmd[tag]=="悔棋") {
                             Withdraw();
                             system("pause");
-                        } else if(cmd[tag]=="Save") {
+                        } else if(cmd[tag]=="存盘") {
+
+                            HideCursor(1);
+  
                             printf("input the name of the file:");
                             scanf("%s",str);
                             Write(str);
-                            printf("Save success\n");
+                            printf("存盘 success\n");
+
+                            HideCursor(Cursor_flag);
+
                             system("pause");
-                        } else if(cmd[tag]=="Read File") {
+
+                        } else if(cmd[tag]=="读取") {
+
+                            HideCursor(1);
+
                             printf("Files are below:\n");
                             puts("-------------------");
                             Get_File::Show_Files();
                             puts("-------------------");
                             printf("input the name of the file:");
                             scanf("%s",str);
+
                             if(Read(str)) {
+                                
+                                
+                                HideCursor(Cursor_flag);
+
                                 system("pause");
                                 return ;
                             }
-                        } else if(cmd[tag]=="Help") {
+                            HideCursor(Cursor_flag);
+
+                        } else if(cmd[tag]=="提示") {
                             int x=0,y=0;
                             Robot::Move(x,y);
                             printf("Maybe (%d,%d) is OK!!\n",x,y);
                             system("pause");
                             return ;
-                        } else if(cmd[tag]=="Change Input Mode") {
+                        } else if(cmd[tag]=="更改输入方式") {
                             Cursor_flag ^= 1;
                             HideCursor(Cursor_flag);
                             Input_Mode^=1;
@@ -402,11 +446,13 @@ int main() {
             system("pause");
             return 0;
         }
+        Blank();
         if(Input_Mode) {
-            printf("Press ESC to see the menu\n");
+            printf("按 ESC 打开菜单\n");
         } else {
-            printf("Input 'M' to see the menu\n");
+            printf("输入 'M' 打开菜单\n");
         }
+        Blank();
         printf("It's your turn!: ");
         if(Turn) cout<<"○\n";
         else cout<<"●\n";
@@ -425,7 +471,7 @@ int main() {
             Robot::Move(x,y);
         }
 
-        
+        Blank();
         printf("(%d,%d)\n",x,y);
         Sleep(600);
         int ck=Check_with_ufs::Check_xy(x,y,Turn);
@@ -439,13 +485,20 @@ int main() {
         }
 
         if(!ck) {
-            cout<<"You can't place here!\n";
+            Blank();
+            cout<<"下在该点会导致失败!\n";
         } else if(ck==-1) {
-            cout<<"-1\n";
+            Blank();
+            cout<<"该点已被占据\n";
         } else if(ck==-2) {
-            cout<<"Out of the board!\n";
+            Blank();
+            cout<<"不能下在棋盘外!\n";
         }
-        printf("place again\n");
+        Blank();
+
+        printf("再下一次\n");
+
+        Blank();
         system("pause");
     }
     return 0;
