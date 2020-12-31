@@ -28,11 +28,15 @@ void Set_xy() {
         }
     }
 }
-
+void Set_xy(int x,int y) {
+    chx = x;
+    chy = y;
+}
 int blk = 16;
 void Blank() {
     for(int i=1;i<=blk;i++) cout<<" ";
 }
+
 void Print() {
     system("cls");
     puts("");
@@ -46,8 +50,8 @@ void Print() {
 
         for(int j=1;j<=N;j++) {
             if(Turn==0&&Input_Mode&&i==chx&&j==chy) printf("╳ ");
-            else if(mp[i][j]==1) printf("○");
-            else if(mp[i][j]==0) printf("●");
+            else if(mp[i][j]==1) printf("●");
+            else if(mp[i][j]==0) printf("○");
             else if(i==1&&j==1) {
                 printf("┏ ");
             } else if(i==1&&j==N) {
@@ -194,7 +198,7 @@ namespace Menu {
     void Withdraw() {
         static node tem;
         if(List.size()<=0) {
-            cout<<"you can't 悔棋!!\n";
+            cout<<"你不能悔棋!!\n";
         } else {
             tem=List.back();
             printf("悔棋: (%d,%d)\n",tem.x,tem.y);
@@ -304,6 +308,7 @@ namespace Menu {
                         } else if(cmd[tag]=="提示") {
                             int x=0,y=0;
                             Robot::Move(x,y);
+                            if(Input_Mode) Set_xy(x,y);
                             printf("Maybe (%d,%d) is OK!!\n",x,y);
                             system("pause");
                             return ;
@@ -427,6 +432,10 @@ int Get_cmd_arrow(int &x,int &y) {
 
 char str[2233];
 int main() {
+    HANDLE hOut;
+    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hOut,BACKGROUND_RED |BACKGROUND_GREEN |BACKGROUND_BLUE );
+
     HideCursor(Cursor_flag);
 
     srand(233);
@@ -454,8 +463,8 @@ int main() {
         }
         Blank();
         printf("It's your turn!: ");
-        if(Turn) cout<<"○\n";
-        else cout<<"●\n";
+        if(Turn) cout<<"●\n";
+        else cout<<"○\n";
         int cmd;
         if(Turn==0) {
             // Robot::Rand(x,y);
